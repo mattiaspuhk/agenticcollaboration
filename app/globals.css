@@ -1,26 +1,118 @@
 @import "tailwindcss";
 
+/* ---- Studio palette · LIGHT (default) ---- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f8;
+  --foreground: #15171c;
+  --surface: #ffffff;
+  --surface-2: #f1f2f5;
+  --surface-3: #e7e9ee;
+  --border: #e1e3e8;
+  --border-strong: #c9ccd3;
+  --muted: #6b7280;
+  --muted-2: #9ba1aa;
+  --accent: #d97706;
+  --accent-soft: rgba(217, 119, 6, 0.10);
+  --accent-fg: #ffffff;
+
+  --pm: #b45309;
+  --eng: #047857;
+  --design: #be185d;
+  --agent: #6d28d9;
+  --ok: #047857;
+  --warn: #b45309;
+  --err: #b91c1c;
+
+  --diff-add-bg: rgba(4, 120, 87, 0.08);
+  --diff-del-bg: rgba(185, 28, 28, 0.08);
+}
+
+/* ---- Studio palette · DARK ---- */
+.dark {
+  --background: #0f1115;
+  --foreground: #e6e8ec;
+  --surface: #171a21;
+  --surface-2: #1d2129;
+  --surface-3: #232831;
+  --border: #262a33;
+  --border-strong: #323845;
+  --muted: #8b929e;
+  --muted-2: #6b7280;
+  --accent: #f59e0b;
+  --accent-soft: rgba(245, 158, 11, 0.12);
+  --accent-fg: #1a1410;
+
+  --pm: #f59e0b;
+  --eng: #34d399;
+  --design: #f472b6;
+  --agent: #a78bfa;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --err: #f87171;
+
+  --diff-add-bg: rgba(52, 211, 153, 0.06);
+  --diff-del-bg: rgba(248, 113, 113, 0.06);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-pm: var(--pm);
+  --color-eng: var(--eng);
+  --color-design: var(--design);
+  --color-agent: var(--agent);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+html {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+/* Quiet, themable scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }
