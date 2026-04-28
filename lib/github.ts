@@ -44,6 +44,39 @@ export async function listPullRequests(repo: string): Promise<GhPullRequest[]> {
   return (await res.json()) as GhPullRequest[];
 }
 
+export async function openPullRequest(
+  repo: string,
+  opts: {
+    head: string;
+    base: string;
+    title: string;
+    body: string;
+    draft?: boolean;
+  },
+): Promise<{ number: number; html_url: string; state: string }> {
+  const res = await fetch(`${BASE}/repos/${repo}/pulls`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      head: opts.head,
+      base: opts.base,
+      title: opts.title,
+      body: opts.body,
+      draft: opts.draft ?? false,
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`github open PR ${res.status}: ${text}`);
+  }
+  return (await res.json()) as {
+    number: number;
+    html_url: string;
+    state: string;
+  };
+}
+
 export async function listRecentCommits(
   repo: string,
   since?: Date,

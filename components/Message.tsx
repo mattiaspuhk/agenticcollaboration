@@ -11,6 +11,8 @@ import { EditCard } from "./blocks/EditCard";
 import { FileRef } from "./blocks/FileRef";
 import { MessageBody } from "./MessageBody";
 
+export type AudienceMode = "pm" | "engineer" | "designer";
+
 export type MessageView = {
   id: string;
   authorKind: "user" | "agent" | "system";
@@ -20,6 +22,7 @@ export type MessageView = {
   blocks: MessageBlock[];
   createdAt: string;
   pending?: boolean;
+  audienceMode?: AudienceMode | null;
 };
 
 const ROLE_LABEL: Record<PersonaId, string> = {
@@ -29,6 +32,18 @@ const ROLE_LABEL: Record<PersonaId, string> = {
   agent: "peer",
   system: "system",
   user: "End user",
+};
+
+const AUDIENCE_LABEL: Record<AudienceMode, string> = {
+  pm: "PM-mode",
+  engineer: "Eng-mode",
+  designer: "Design-mode",
+};
+
+const AUDIENCE_COLOR: Record<AudienceMode, string> = {
+  pm: "var(--color-pm)",
+  engineer: "var(--color-eng)",
+  designer: "var(--color-design)",
 };
 
 export function Message({ message }: { message: MessageView }) {
@@ -65,6 +80,19 @@ export function Message({ message }: { message: MessageView }) {
           >
             {ROLE_LABEL[message.authorPersona] ?? "·"}
           </span>
+          {isAgent && message.audienceMode && (
+            <span
+              className="text-[10px] uppercase tracking-[0.06em] font-semibold border rounded-[3px] px-[5px] py-px"
+              style={{
+                color: AUDIENCE_COLOR[message.audienceMode],
+                borderColor: `color-mix(in srgb,${AUDIENCE_COLOR[message.audienceMode]} 45%,transparent)`,
+                background: `color-mix(in srgb,${AUDIENCE_COLOR[message.audienceMode]} 10%,transparent)`,
+              }}
+              title={`Replying in ${AUDIENCE_LABEL[message.audienceMode]} — audience-aware overlay`}
+            >
+              {AUDIENCE_LABEL[message.audienceMode]}
+            </span>
+          )}
           <span className="text-[11px] text-[var(--muted)]">
             {formatTime(message.createdAt)}
           </span>

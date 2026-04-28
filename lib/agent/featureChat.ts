@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { db, schema } from "@/db/client";
 import { eq } from "drizzle-orm";
 import { anthropic, MODEL, loadPromptByName } from "./anthropic";
+import { detectAudienceMode, loadAudienceOverlay } from "./audience";
 import { loadContainerMessages } from "@/lib/containerMessages";
 import { embedMessageBodyFireAndForget } from "@/lib/embedMessage";
 import type { LinkedPr, FeatureBlocker } from "@/db/schema";
@@ -91,8 +92,14 @@ export async function runFeatureChat(opts: {
     return null;
   }
 
+  const audienceMode = detectAudienceMode(rows);
+  const overlay = await loadAudienceOverlay(audienceMode);
+
   const featureContext = renderFeatureContext(feature);
-  const system = `${baseSystem}\n\n# Feature context\n\n${featureContext}`;
+  const systemParts = [baseSystem];
+  if (overlay) systemParts.push(overlay);
+  systemParts.push(`# Feature context\n\n${featureContext}`);
+  const system = systemParts.join("\n\n");
 
   const [agentMsg] = await db
     .insert(schema.messages)
@@ -102,6 +109,7 @@ export async function runFeatureChat(opts: {
       authorKind: "agent",
       authorPersona: "agent",
       agentRole: "feature-chat",
+      audienceMode: audienceMode ?? undefined,
       authorLabel: "Agent",
       bodyMd: "",
       blocks: [],

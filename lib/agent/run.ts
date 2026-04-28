@@ -129,7 +129,19 @@ export async function runAgent(opts: {
   const a = client();
   const projectId = await resolveProjectId(threadId);
 
-  // Persist a placeholder agent message to attach edits / final body to.
+  // Detect the audience BEFORE inserting the placeholder so the message
+  // carries `audienceMode` from the start. The placeholder is excluded
+  // from the asking-persona scan trivially since it doesn't exist yet.
+  const priorRows = await loadThreadMessages(threadId);
+  const askingPersona = detectAskingPersona(priorRows);
+  const audienceMode =
+    systemPromptName === "system" &&
+    (askingPersona === "pm" ||
+      askingPersona === "engineer" ||
+      askingPersona === "designer")
+      ? askingPersona
+      : null;
+
   const persona = PERSONAS.agent;
   const [agentMsg] = await db
     .insert(schema.messages)
@@ -138,6 +150,7 @@ export async function runAgent(opts: {
       authorKind: "agent",
       authorPersona: "agent",
       authorLabel: persona.label,
+      audienceMode: audienceMode ?? undefined,
       bodyMd: "",
       blocks: [],
     })
@@ -148,10 +161,7 @@ export async function runAgent(opts: {
 
   const baseSystem = await loadPrompt(systemPromptName);
 
-  const threadRows = await loadThreadMessages(threadId);
-  const askingPersona = detectAskingPersona(
-    threadRows.filter((r) => r.id !== agentMsg.id),
-  );
+  const threadRows = priorRows;
   const overlay =
     systemPromptName === "system"
       ? await getAudienceOverlay(askingPersona)

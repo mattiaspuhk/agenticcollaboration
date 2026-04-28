@@ -471,6 +471,46 @@ export const featureSignals = pgTable(
   ],
 );
 
+export type CodeChange = {
+  path: string;
+  kind: "add" | "modify" | "delete";
+  oldContent: string | null;
+  newContent: string | null;
+};
+
+export type BuildLogEntry =
+  | { type: "tool"; name: string; arg: string; ok: boolean; at: string }
+  | { type: "text"; text: string; at: string };
+
+export const codeRuns = pgTable(
+  "code_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    featureId: uuid("feature_id")
+      .references(() => features.id, { onDelete: "cascade" })
+      .notNull(),
+    status: text("status", {
+      enum: ["running", "awaiting_review", "applied", "rejected", "error"],
+    })
+      .notNull()
+      .default("running"),
+    branchName: text("branch_name").notNull(),
+    baseBranch: text("base_branch").notNull().default("main"),
+    baseSha: text("base_sha"),
+    prTitle: text("pr_title"),
+    prBody: text("pr_body"),
+    prNumber: integer("pr_number"),
+    prUrl: text("pr_url"),
+    agentMessageId: uuid("agent_message_id"),
+    changes: jsonb("changes").$type<CodeChange[]>().default([]).notNull(),
+    log: jsonb("log").$type<BuildLogEntry[]>().default([]).notNull(),
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    finishedAt: timestamp("finished_at"),
+  },
+  (t) => [index("code_runs_feature_idx").on(t.featureId, t.createdAt)],
+);
+
 export const chatHistory = pgTable(
   "chat_history",
   {

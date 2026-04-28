@@ -27,6 +27,8 @@ export async function GET(
       authorKind: m.authorKind,
       authorPersona: m.authorPersona,
       authorLabel: m.authorLabel,
+      agentRole: m.agentRole,
+      audienceMode: m.audienceMode,
       bodyMd: m.bodyMd,
       blocks: m.blocks,
       createdAt: m.createdAt.toISOString(),

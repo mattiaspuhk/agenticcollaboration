@@ -29,6 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${plexSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>

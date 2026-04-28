@@ -28,6 +28,7 @@ export default async function DiscussionPage({
       authorKind: m.authorKind,
       authorPersona: m.authorPersona,
       authorLabel: m.authorLabel,
+      audienceMode: m.audienceMode,
       bodyMd: m.bodyMd,
       blocks: m.blocks,
       createdAt: m.createdAt.toISOString(),
