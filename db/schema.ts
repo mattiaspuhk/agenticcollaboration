@@ -28,6 +28,8 @@ export const projects = pgTable("projects", {
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   rootPath: text("root_path").notNull(),
+  githubRepo: text("github_repo"),
+  defaultBranch: text("default_branch").default("main").notNull(),
   docsPaths: jsonb("docs_paths").$type<string[]>().default([]).notNull(),
   status: text("status", {
     enum: ["new", "indexing", "ready", "error"],
@@ -253,9 +255,7 @@ export const codeChunks = pgTable(
     content: text("content").notNull(),
     embedding: vector("embedding").notNull(),
   },
-  (t) => [
-    index("code_chunks_project_file_idx").on(t.projectId, t.filePath),
-  ],
+  (t) => [index("code_chunks_project_file_idx").on(t.projectId, t.filePath)],
 );
 
 export const docChunks = pgTable(
@@ -463,11 +463,7 @@ export const featureSignals = pgTable(
     expiresAt: timestamp("expires_at"),
   },
   (t) => [
-    index("feature_signals_feature_idx").on(
-      t.featureId,
-      t.role,
-      t.tileKind,
-    ),
+    index("feature_signals_feature_idx").on(t.featureId, t.role, t.tileKind),
   ],
 );
 

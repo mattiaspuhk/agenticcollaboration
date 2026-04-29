@@ -10,6 +10,7 @@ import {
 import { RoleSwitcher } from "./RoleSwitcher";
 import { Message, type MessageView } from "./Message";
 import { FeatureComposer } from "./FeatureComposer";
+import { BuildPanel, type BuildRunSummary } from "./BuildPanel";
 import type {
   ChatTilePayload,
   FeatureCardTilePayload,
@@ -62,13 +63,18 @@ const POLL_REFRESH_MS = 60_000;
 export function FeatureDashboard({
   featureId,
   role,
+  projectSlug,
+  featureKey,
 }: {
   featureId: string;
   role: Role;
+  projectSlug: string;
+  featureKey: string;
 }) {
   const [data, setData] = useState<FeaturePayload | null>(null);
   const [agentBuffer, setAgentBuffer] = useState<MessageView | null>(null);
   const [polling, setPolling] = useState(false);
+  const [latestRun, setLatestRun] = useState<BuildRunSummary | null>(null);
   const tilesTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -78,9 +84,17 @@ export function FeatureDashboard({
     if (res.ok) setData(await res.json());
   }, [featureId, role]);
 
+  const refreshRuns = useCallback(async () => {
+    const res = await fetch(`/api/features/${featureId}/runs`);
+    if (!res.ok) return;
+    const body = (await res.json()) as { runs: BuildRunSummary[] };
+    setLatestRun(body.runs[0] ?? null);
+  }, [featureId]);
+
   useEffect(() => {
     refresh();
-  }, [refresh]);
+    refreshRuns();
+  }, [refresh, refreshRuns]);
 
   useEffect(() => {
     if (tilesTimer.current) clearInterval(tilesTimer.current);
@@ -251,6 +265,19 @@ export function FeatureDashboard({
           ))}
           {agentBuffer && <Message message={agentBuffer} />}
         </div>
+
+        {role !== "user" && (
+          <BuildPanel
+            featureId={featureId}
+            projectSlug={projectSlug}
+            featureKey={featureKey}
+            run={latestRun}
+            onChanged={() => {
+              refreshRuns();
+              refresh();
+            }}
+          />
+        )}
 
         <FeatureComposer
           featureId={featureId}

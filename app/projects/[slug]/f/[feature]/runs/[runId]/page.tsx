@@ -1,26 +1,16 @@
 import { notFound } from "next/navigation";
 import { db, schema } from "@/db/client";
 import { and, eq } from "drizzle-orm";
-import { FeatureDashboard } from "@/components/FeatureDashboard";
+import { CodeDiffView } from "@/components/CodeDiffView";
 import { getProjectBySlug } from "@/lib/data";
-import type { Role } from "@/lib/tiles";
 
-function parseRole(s: string | undefined): Role {
-  if (s === "eng" || s === "user" || s === "pm") return s;
-  return "pm";
-}
-
-export default async function FeaturePage({
+export default async function RunPage({
   params,
-  searchParams,
 }: {
-  params: Promise<{ slug: string; feature: string }>;
-  searchParams: Promise<{ role?: string }>;
+  params: Promise<{ slug: string; feature: string; runId: string }>;
 }) {
-  const [{ slug, feature: featureKey }, sp] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const { slug, feature: featureKey, runId } = await params;
+
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
@@ -38,12 +28,17 @@ export default async function FeaturePage({
   });
   if (!feature) notFound();
 
-  const role = parseRole(sp.role);
+  const run = await db.query.codeRuns.findFirst({
+    where: and(
+      eq(schema.codeRuns.id, runId),
+      eq(schema.codeRuns.featureId, feature.id),
+    ),
+  });
+  if (!run) notFound();
 
   return (
-    <FeatureDashboard
-      featureId={feature.id}
-      role={role}
+    <CodeDiffView
+      runId={runId}
       projectSlug={slug}
       featureKey={featureKey}
     />
